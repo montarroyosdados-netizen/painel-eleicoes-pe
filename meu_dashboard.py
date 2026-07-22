@@ -3,7 +3,7 @@ import streamlit as st
 
 st.set_page_config(page_title="Painel Eleitoral de Pernambuco", layout="wide")
 
-st.title("🦁 Painel Eleitoral de Pernambuco")
+st.title("Painel Eleitoral de Pernambuco")
 
 
 @st.cache_data
