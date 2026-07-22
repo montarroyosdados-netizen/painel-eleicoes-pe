@@ -1,49 +1,29 @@
-import os
 import pandas as pd
 import streamlit as st
 
-st.set_page_config(
-    page_title="Painel Eleitoral de Pernambuco",
-    page_icon="🦁",
-    layout="wide",
-)
+st.set_page_config(page_title="Painel Eleitoral de Pernambuco", layout="wide")
 
 st.title("🦁 Painel Eleitoral de Pernambuco")
 
 
 @st.cache_data
 def carregar_dados():
-  # Procura o arquivo CSV na pasta atual independentemente de maiúsculas/minúsculas
-  for f in os.listdir("."):
-    if f.lower().endswith(".csv"):
-      try:
-        return pd.read_csv(f, low_memory=False, on_bad_lines="skip")
-      except Exception:
-        pass
-  return None
+  df = pd.read_csv("dados_eleitorais_pe_completo_2002_2024.csv")
+  # Padroniza todas as colunas para maiúsculo para evitar qualquer erro de digitação
+  df.columns = [str(c).strip().upper() for c in df.columns]
+  return df
 
 
 df = carregar_dados()
 
-if df is None:
-  st.error(
-      "Erro crítico: O arquivo CSV de dados não foi encontrado na pasta do"
-      " projeto."
-  )
-else:
-  # Normaliza os nomes das colunas para maiúsculo para evitar conflito
-  df.columns = [str(c).strip().upper() for c in df.columns]
+# Garante que a coluna ANO existe de forma exata
+col_ano = "ANO" if "ANO" in df.columns else df.columns[0]
 
-  # Identifica a coluna de ano
-  col_ano = "ANO" if "ANO" in df.columns else df.columns[0]
+st.sidebar.header("Filtros")
+anos = sorted(df[col_ano].dropna().unique(), reverse=True)
+ano_sel = st.sidebar.selectbox("Ano", anos)
 
-  st.sidebar.header("Filtros")
-  anos_disponiveis = sorted(df[col_ano].dropna().unique(), reverse=True)
-  ano_selecionado = st.sidebar.selectbox("Selecione o Ano", anos_disponiveis)
+df_filtrado = df[df[col_ano] == ano_sel]
 
-  df_filtrado = df[df[col_ano] == ano_selecionado]
-
-  st.metric(
-      "Total de Registros no Ano", f"{len(df_filtrado):,}".replace(",", ".")
-  )
-  st.dataframe(df_filtrado, use_container_width=True)
+st.metric("Total de Registros", f"{len(df_filtrado):,}".replace(",", "."))
+st.dataframe(df_filtrado, use_container_width=True)
