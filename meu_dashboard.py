@@ -14,11 +14,14 @@ def carregar_dados():
 
 df = carregar_dados()
 
+# Identifica automaticamente o nome correto da coluna de ano (maiúscula ou minúscula)
+col_ano = next((c for c in df.columns if "ano" in c.lower()), "ANO")
+
 st.sidebar.header("Filtros")
-anos = sorted(df["ANO"].unique(), reverse=True)
+anos = sorted(df[col_ano].dropna().unique(), reverse=True)
 ano_sel = st.sidebar.selectbox("Ano", anos)
 
-df_filtrado = df[df["ANO"] == ano_sel]
+df_filtrado = df[df[col_ano] == ano_sel]
 
-st.metric("Total de Registros", len(df_filtrado))
-st.dataframe(df_filtrado)
+st.metric("Total de Registros", f"{len(df_filtrado):,}".replace(",", "."))
+st.dataframe(df_filtrado, use_container_width=True)
